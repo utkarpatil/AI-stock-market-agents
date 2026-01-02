@@ -8,7 +8,7 @@ from typing import Dict, Any, List
 from datetime import datetime
 from agents.base_agent import BaseAgent
 from loguru import logger
-from langchain.memory import ConversationBufferMemory
+from langchain.memory.buffer import ConversationBufferMemory
 from langchain.schema import HumanMessage, AIMessage
 import json
 
