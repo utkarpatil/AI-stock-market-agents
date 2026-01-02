@@ -1,0 +1,30 @@
+# Environment
+.env
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+
+# Data & Logs
+data/chroma_db/
+data/risk_profiles/*.json
+logs/
+*.log
+
+# Output files
+*.json
+*.xlsx
+*.csv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
