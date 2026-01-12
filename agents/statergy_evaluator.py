@@ -8,7 +8,7 @@ from typing import Dict, Any, List
 from datetime import datetime
 from agents.base_agent import BaseAgent
 from loguru import logger
-from langchain.memory.buffer import ConversationBufferMemory
+from langchain.memory import ConversationBufferWindowMemory
 from langchain.schema import HumanMessage, AIMessage
 import json
 
@@ -26,7 +26,8 @@ class StrategyEvaluatorAgent(BaseAgent):
         super().__init__("StrategyEvaluator", openai_api_key, model)
         
         # LangChain conversation memory
-        self.memory = ConversationBufferMemory(
+        self.memory = ConversationBufferWindowMemory(
+            k=10,
             memory_key="chat_history",
             return_messages=True
         )
