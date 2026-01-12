@@ -2,6 +2,7 @@ import streamlit as st
 import json
 import subprocess
 import os
+import sys
 from datetime import datetime
 
 # Page configuration
@@ -51,9 +52,17 @@ st.markdown("### AI-Powered Multi-Agent Stock Analysis System")
 with st.sidebar:
     st.header("⚙️ Configuration")
     
-    # API Key input (if needed)
-    api_key = st.text_input("OpenAI API Key", type="password", 
-                            help="Enter your OpenAI API key")
+    # Check if API key exists in environment or .env file
+    api_key_exists = os.getenv('OPENAI_API_KEY') is not None
+    
+    if api_key_exists:
+        st.success("✅ API Key detected in environment")
+    else:
+        st.warning("⚠️ No API Key found in environment")
+        api_key = st.text_input("Enter OpenAI API Key", type="password", 
+                                help="Your API key will be used for this session only")
+        if api_key:
+            os.environ['OPENAI_API_KEY'] = api_key
     
     st.markdown("---")
     st.markdown("### 📊 About")
@@ -64,6 +73,15 @@ with st.sidebar:
     - 📈 Technical Analysis
     - 💰 Macro Economics
     - ⚖️ Risk Management
+    """)
+    
+    st.markdown("---")
+    st.markdown("### ℹ️ How to Use")
+    st.markdown("""
+    1. Enter stock ticker(s)
+    2. Click 'Run Analysis'
+    3. Wait for AI agents to complete analysis
+    4. Review recommendations
     """)
 
 # Main content
@@ -85,6 +103,8 @@ with col2:
 if analyze_button:
     if not tickers_input:
         st.error("⚠️ Please enter at least one stock ticker")
+    elif not os.getenv('OPENAI_API_KEY'):
+        st.error("⚠️ Please provide an OpenAI API key")
     else:
         # Parse tickers
         tickers = [t.strip().upper() for t in tickers_input.split(',') if t.strip()]
@@ -100,28 +120,35 @@ if analyze_button:
             status_text.text("🔄 Initializing agents...")
             progress_bar.progress(20)
             
-            # Set API key as environment variable if provided
-            if api_key:
-                os.environ['OPENAI_API_KEY'] = api_key
-            
             # Run the analysis
             status_text.text("🔍 Running multi-agent analysis...")
             progress_bar.progress(40)
             
+            # Get the directory where this script is located
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            main_py_path = os.path.join(script_dir, 'main.py')
+            
             # Execute your main.py script
+            # Pass tickers as command line arguments
+            cmd = [sys.executable, main_py_path] + tickers
+            
             result = subprocess.run(
-                ['python', 'main.py'] + tickers,
+                cmd,
                 capture_output=True,
                 text=True,
-                timeout=300
+                timeout=300,
+                cwd=script_dir
             )
             
             progress_bar.progress(80)
             status_text.text("📊 Processing results...")
             
+            # Look for analysis output file
+            output_file = os.path.join(script_dir, 'analysis_output.json')
+            
             # Check if analysis was successful
-            if os.path.exists('analysis_output.json'):
-                with open('analysis_output.json', 'r') as f:
+            if os.path.exists(output_file):
+                with open(output_file, 'r') as f:
                     analysis_data = json.load(f)
                 
                 progress_bar.progress(100)
@@ -224,17 +251,30 @@ if analyze_button:
                 )
                 
             else:
+                progress_bar.progress(100)
                 st.error("❌ Analysis output file not found")
-                if result.stderr:
-                    st.error(f"Error details: {result.stderr}")
+                
+                # Show stdout and stderr for debugging
+                with st.expander("🔍 Debug Information"):
+                    st.text("Standard Output:")
+                    st.code(result.stdout if result.stdout else "No output")
+                    st.text("Standard Error:")
+                    st.code(result.stderr if result.stderr else "No errors")
+                    st.text(f"Return Code: {result.returncode}")
         
         except subprocess.TimeoutExpired:
             st.error("⏱️ Analysis timed out. Please try with fewer stocks.")
         
+        except FileNotFoundError as e:
+            st.error(f"❌ File not found: {str(e)}")
+            st.info("Make sure main.py is in the same directory as streamlit_app.py")
+        
         except Exception as e:
             st.error(f"❌ An error occurred: {str(e)}")
-            if 'result' in locals() and result.stderr:
-                st.error(f"Details: {result.stderr}")
+            if 'result' in locals():
+                with st.expander("🔍 Debug Information"):
+                    st.code(result.stdout if result.stdout else "No output")
+                    st.code(result.stderr if result.stderr else "No errors")
 
 # Footer
 st.markdown("---")
