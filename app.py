@@ -50,21 +50,6 @@ st.markdown("### AI-Powered Multi-Agent Stock Analysis System")
 
 # Sidebar
 with st.sidebar:
-    st.header("⚙️ Configuration")
-    
-    # Check if API key exists in environment or .env file
-    api_key_exists = os.getenv('OPENAI_API_KEY') is not None
-    
-    if api_key_exists:
-        st.success("✅ API Key detected in environment")
-    else:
-        st.warning("⚠️ No API Key found in environment")
-        api_key = st.text_input("Enter OpenAI API Key", type="password", 
-                                help="Your API key will be used for this session only")
-        if api_key:
-            os.environ['OPENAI_API_KEY'] = api_key
-    
-    st.markdown("---")
     st.markdown("### 📊 About")
     st.info("""
     This system uses multiple AI agents to analyze stocks:
@@ -103,8 +88,6 @@ with col2:
 if analyze_button:
     if not tickers_input:
         st.error("⚠️ Please enter at least one stock ticker")
-    elif not os.getenv('OPENAI_API_KEY'):
-        st.error("⚠️ Please provide an OpenAI API key")
     else:
         # Parse tickers
         tickers = [t.strip().upper() for t in tickers_input.split(',') if t.strip()]
