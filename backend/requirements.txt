@@ -1,11 +1,11 @@
 # ===============================
-# Web Framework (REQUIRED)
+# Web Framework
 # ===============================
 fastapi==0.110.0
 uvicorn==0.27.1
 
 # ===============================
-# Core AI / LLM (PINNED)
+# Core AI
 # ===============================
 openai==1.12.0
 langchain==0.1.20
@@ -15,32 +15,18 @@ langchain-openai==0.1.8
 langgraph==0.0.69
 
 # ===============================
-# Market Data & Analysis
+# Market Data
 # ===============================
 yfinance==0.2.36
 ta==0.11.0
 finnhub-python==2.4.19
 pandas==2.2.0
 numpy==1.26.4
-scipy==1.11.4
-
-# ===============================
-# News & Web
-# ===============================
-newsapi-python==0.2.7
 requests==2.31.0
-beautifulsoup4==4.12.3
-
-# ===============================
-# Vector / Memory
-# ===============================
-chromadb==0.4.22
-sentence-transformers==2.3.1
 
 # ===============================
 # Utilities
 # ===============================
 python-dotenv==1.0.1
-pyyaml==6.0.1
 loguru==0.7.2
 pydantic==2.6.1
