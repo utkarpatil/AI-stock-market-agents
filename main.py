@@ -1,7 +1,7 @@
 # main.py
 """
-Main execution script for Multi-Agent Stock Market Analysis System.
-Can be run from command line or imported as a module.
+Terminal-based execution script for Multi-Agent Stock Market Analysis System.
+Prints final analysis results directly in the terminal.
 """
 
 import asyncio
@@ -13,7 +13,6 @@ from dotenv import load_dotenv
 from loguru import logger
 
 from mcp.master_control import MCPOrchestrator
-from tools.company_mapper import company_to_ticker   # ✅ NEW
 
 
 # -------------------------------------------------------------------
@@ -35,35 +34,32 @@ logger.add(
 # -------------------------------------------------------------------
 
 def setup_environment():
-    """Load environment variables and validate."""
     load_dotenv()
 
     required_keys = ["OPENAI_API_KEY", "NEWSAPI_KEY", "FINNHUB_API_KEY"]
-    missing_keys = [key for key in required_keys if not os.getenv(key)]
+    missing = [k for k in required_keys if not os.getenv(k)]
 
-    if missing_keys:
-        raise ValueError(f"Missing required API keys: {', '.join(missing_keys)}")
+    if missing:
+        raise ValueError(f"Missing required API keys: {', '.join(missing)}")
 
     logger.info("Environment setup complete")
 
 
 # -------------------------------------------------------------------
-# CLI Argument Parsing (UNCHANGED)
+# CLI Arguments
 # -------------------------------------------------------------------
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
-        description="Multi-Agent Stock Market Analysis System"
+        description="Multi-Agent Stock Market Analysis System (Terminal)"
     )
 
     parser.add_argument(
         "--stocks",
         type=str,
         default="TSLA,NVDA,NET",
-        help="Comma-separated list of stock tickers"
+        help="Comma-separated stock tickers (e.g. TSLA,AAPL)"
     )
-
-    parser.add_argument("--user-id", type=str, default="default")
 
     parser.add_argument(
         "--risk-profile",
@@ -78,28 +74,22 @@ def parse_arguments():
     )
 
     parser.add_argument(
-        "--output",
-        type=str,
-        default="analysis_output.json"
+        "--save",
+        action="store_true",
+        help="Save output to JSON file"
     )
-
-    parser.add_argument("--test", action="store_true")
 
     return parser.parse_args()
 
 
 # -------------------------------------------------------------------
-# CORE ASYNC ANALYSIS (UNCHANGED)
+# Core Analysis
 # -------------------------------------------------------------------
 
-async def run_analysis(
-    tickers: list,
-    user_id: str,
-    user_preferences: dict,
-    output_path: str
-):
+async def run_analysis(tickers, user_preferences):
     logger.info("=" * 80)
     logger.info("STARTING MULTI-AGENT STOCK MARKET ANALYSIS")
+    logger.info(f"Tickers: {tickers}")
     logger.info("=" * 80)
 
     mcp = MCPOrchestrator(
@@ -110,81 +100,62 @@ async def run_analysis(
 
     result = await mcp.run_analysis(
         tickers=tickers,
-        user_id=user_id,
+        user_id="terminal_user",
         user_preferences=user_preferences
     )
 
-    with open(output_path, "w") as f:
-        json.dump(result, f, indent=2)
-
-    logger.info(f"Results saved to: {output_path}")
     return result
 
 
 # -------------------------------------------------------------------
-# 🔥 STREAMLIT-SAFE WRAPPER (NEW)
+# Terminal Output (FIXED & ROBUST)
 # -------------------------------------------------------------------
 
-def run_analysis_sync(
-    companies: list,
-    risk_profile: str = "moderate",
-    time_horizon: str = "medium-term",
-    user_id: str = "public_user",
-    output_path: str = "analysis_output.json"
-):
-    """
-    Synchronous wrapper for Streamlit.
-    Accepts COMPANY NAMES, converts them to tickers.
-    """
+def print_results(result: dict):
+    print("\n" + "=" * 80)
+    print("📊 FINAL STOCK ANALYSIS RESULT")
+    print("=" * 80)
 
-    setup_environment()
+    # MCP wraps final output inside "data"
+    data = result.get("data") or result
 
-    tickers = []
-    for company in companies:
-        ticker = company_to_ticker(company)
-        if not ticker:
-            raise ValueError(f"Unsupported company name: {company}")
-        tickers.append(ticker)
+    recommendations = data.get("final_recommendations", [])
 
-    user_preferences = {
-        "risk_profile": risk_profile,
-        "time_horizon": time_horizon,
-        "max_position_size": 5.0 if risk_profile == "aggressive" else 3.0
-    }
+    if not recommendations:
+        print("\n⚠️ No final recommendations returned.")
+        return
 
-    return asyncio.run(
-        run_analysis(
-            tickers=tickers,
-            user_id=user_id,
-            user_preferences=user_preferences,
-            output_path=output_path
-        )
-    )
+    for i, rec in enumerate(recommendations, 1):
+        print(f"\n#{i} 📈 {rec.get('ticker')}")
+        print(f"  Action        : {rec.get('action')}")
+        print(f"  Confidence    : {rec.get('confidence')}%")
+        print(f"  Expected ROI  : {rec.get('expected_roi')}%")
+        print(f"  Horizon       : {rec.get('time_horizon')}")
+        print(f"  Consensus     : {rec.get('consensus_score')}")
+        print(f"  Entry         : {rec.get('recommended_entry')}")
+        print(f"  Target        : {rec.get('recommended_target')}")
+        print(f"  Stop Loss     : {rec.get('recommended_stop')}")
+        print(f"  Reason        : {rec.get('justification')}")
+
+    allocation = data.get("portfolio_allocation", {})
+    if allocation:
+        print("\n💼 PORTFOLIO ALLOCATION")
+        for a in allocation.get("allocations", []):
+            print(f"  - {a['ticker']}: {a['allocation_pct']}%")
+
+        print(f"  Cash Reserve  : {allocation.get('cash_reserve_pct')}%")
+
+    print("\n" + "=" * 80)
 
 
 # -------------------------------------------------------------------
-# CLI ENTRY POINT (UNCHANGED)
+# Entry Point
 # -------------------------------------------------------------------
 
 def main():
     try:
         setup_environment()
         args = parse_arguments()
-
-        if args.test:
-            asyncio.run(
-                run_analysis(
-                    tickers=["AAPL"],
-                    user_id="test_user",
-                    user_preferences={
-                        "risk_profile": "moderate",
-                        "time_horizon": "medium-term",
-                        "max_position_size": 3.0
-                    },
-                    output_path="test_results.json"
-                )
-            )
-            return 0
 
         tickers = [t.strip().upper() for t in args.stocks.split(",")]
 
@@ -194,20 +165,25 @@ def main():
             "max_position_size": 5.0 if args.risk_profile == "aggressive" else 3.0
         }
 
-        asyncio.run(
-            run_analysis(
-                tickers=tickers,
-                user_id=args.user_id,
-                user_preferences=user_preferences,
-                output_path=args.output
-            )
+        result = asyncio.run(
+            run_analysis(tickers, user_preferences)
         )
+
+        # Print results to terminal
+        print_results(result)
+
+        # Optional save
+        if args.save:
+            filename = f"analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            with open(filename, "w") as f:
+                json.dump(result, f, indent=2)
+            print(f"\n💾 Results saved to {filename}")
 
         return 0
 
     except Exception as e:
-        logger.error(str(e))
-        print(f"❌ Error: {e}")
+        logger.exception("Fatal error")
+        print(f"\n❌ ERROR: {e}")
         return 1
 
 

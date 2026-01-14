@@ -24,23 +24,23 @@ from agents.statergy_evaluator import StrategyEvaluatorAgent
 
 
 class AgentState(TypedDict):
-    """Shared state between all agents."""
-    # Input
-    tickers: List[str]
-    user_id: str
+    tickers: Annotated[List[str], operator.add]
+    user_id: Annotated[str, operator.add]
+
     user_preferences: Dict[str, Any]
-    
+
     # Agent outputs
     macro_report: Dict[str, Any]
     trade_signals: List[Dict[str, Any]]
     company_reports: List[Dict[str, Any]]
     risk_assessments: List[Dict[str, Any]]
     final_recommendations: List[Dict[str, Any]]
-    
+
     # Metadata
     errors: Annotated[List[str], operator.add]
     timestamp: str
     workflow_complete: bool
+
 
 
 class MCPOrchestrator:
@@ -136,9 +136,8 @@ class MCPOrchestrator:
             state["macro_report"] = {}
         
         return {
-    "macro_report": state["macro_report"]
-    }
-
+            "macro_report": state["macro_report"]
+        }
     
     async def _quant_node(self, state: AgentState) -> AgentState:
         """Execute quant analysis node."""
@@ -168,8 +167,9 @@ class MCPOrchestrator:
             state["trade_signals"] = []
         
         return {
-    "trade_signals": state["trade_signals"]
-    }
+            "trade_signals": state["trade_signals"]
+        }
+ 
 
     
     async def _fundamental_node(self, state: AgentState) -> AgentState:
@@ -199,8 +199,8 @@ class MCPOrchestrator:
             state["company_reports"] = []
         
         return {
-    "company_reports": state["company_reports"]
-    }
+            "company_reports": state["company_reports"]
+        }
 
     
     async def _risk_node(self, state: AgentState) -> AgentState:
@@ -238,8 +238,8 @@ class MCPOrchestrator:
             state["risk_assessments"] = []
         
         return {
-    "risk_assessments": state["risk_assessments"]
-    }
+            "risk_assessments": state["risk_assessments"]
+        }
 
     
     async def _strategy_node(self, state: AgentState) -> AgentState:
@@ -272,10 +272,11 @@ class MCPOrchestrator:
             state["final_recommendations"] = []
         
         state["workflow_complete"] = True
+
         return {
-    "final_recommendations": state["final_recommendations"],
-    "workflow_complete": True
-    }
+            "final_recommendations": state["final_recommendations"],
+            "workflow_complete": True
+        }
 
     
     async def run_analysis(
@@ -328,8 +329,7 @@ class MCPOrchestrator:
                 "final_recommendations": final_state.get("final_recommendations", []),
                 "errors": final_state.get("errors", []),
                 "summary": self._generate_summary(final_state)
-            }
-            
+            }    
             logger.info("MCP analysis completed successfully")
             return output
         

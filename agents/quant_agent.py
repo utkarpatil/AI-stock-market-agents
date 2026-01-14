@@ -336,6 +336,19 @@ Calculate entry, target (use ATR for targets), and stop loss based on technical 
 
         response = self.call_llm(system_prompt, user_message, json_mode=True)
         signal_data = self.parse_json_response(response)
+
+        current_price = indicators.get("current_price", 0)
+        atr = indicators.get("atr", 0)
+
+        if not signal_data.get("entry_price"):
+            signal_data["entry_price"] = round(current_price, 2)
+
+        if not signal_data.get("target_price"):
+            signal_data["target_price"] = round(current_price + (2 * atr), 2)
+
+        if not signal_data.get("stop_loss"):
+            signal_data["stop_loss"] = round(current_price - (1.5 * atr), 2)
+
         
         # Add ticker and indicators to response
         signal_data['ticker'] = ticker
