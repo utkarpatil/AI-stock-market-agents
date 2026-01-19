@@ -2,10 +2,11 @@
 fastapi
 uvicorn
 
-# AI / Agents
+# OpenAI
 openai
+
+# LangChain (auto-resolve compatible versions)
 langchain
-langchain-core
 langchain-community
 langchain-openai
 langgraph
