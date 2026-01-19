@@ -5,7 +5,7 @@ uvicorn
 # OpenAI
 openai
 
-# LangChain (auto-resolve compatible versions)
+# LangChain
 langchain
 langchain-community
 langchain-openai
@@ -13,13 +13,13 @@ langgraph
 
 # Market Data
 yfinance
-pandas
 numpy
 requests
 finnhub-python
 
-# Technical Indicators (SAFE)
-pandas-ta
+# ⬇⬇⬇ CRITICAL FIX ⬇⬇⬇
+pandas==2.1.4
+pandas-ta==0.3.14b0
 
 # Utilities
 python-dotenv
