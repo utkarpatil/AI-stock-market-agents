@@ -17,9 +17,9 @@ numpy
 requests
 finnhub-python
 
-# ⬇⬇⬇ CRITICAL FIX ⬇⬇⬇
+# ⬇⬇⬇ FIXED VERSION ⬇⬇⬇
 pandas==2.1.4
-pandas-ta==0.3.14b0
+pandas-ta==0.3.14b
 
 # Utilities
 python-dotenv
