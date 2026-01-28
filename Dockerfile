@@ -1,14 +1,8 @@
 FROM python:3.11
 
-ARG CACHEBUST=1
-
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y \
-    git \
-    build-essential \
-    gcc \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y gcc && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
 

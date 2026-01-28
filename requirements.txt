@@ -14,7 +14,7 @@ requests
 finnhub-python
 
 pandas==2.1.4
-git+https://github.com/twopirllc/pandas-ta.git
+pandas_ta
 
 python-dotenv
 loguru
