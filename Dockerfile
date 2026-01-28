@@ -1,9 +1,9 @@
-FROM python:3.11-slim
+FROM python:3.11
 
 WORKDIR /app
 
-# System deps required by pandas / numpy
 RUN apt-get update && apt-get install -y \
+    git \
     build-essential \
     gcc \
     && rm -rf /var/lib/apt/lists/*
