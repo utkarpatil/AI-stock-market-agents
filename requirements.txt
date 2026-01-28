@@ -1,27 +1,21 @@
-# Web
 fastapi
 uvicorn
 
-# OpenAI
 openai
 
-# LangChain
 langchain
 langchain-community
 langchain-openai
 langgraph
 
-# Market Data
 yfinance
 numpy
 requests
 finnhub-python
 
-# ⬇⬇⬇ FIXED VERSION ⬇⬇⬇
 pandas==2.1.4
-pandas-ta==0.3.14b
+pandas-ta==0.3.14b0
 
-# Utilities
 python-dotenv
 loguru
 pydantic
